@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Create Todo{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="card shadow" id="todoForm">
+     <!-- <button type="submit" class="btn btn-success w-100" id="form-btn" >Assign task</button> -->
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0" id="todo-title">Add New Task</h4>
+    </div>
+    <div class="card-body">
+
+      <form id="todoForm" method="POST"> 
+        {% csrf_token %}
+        <!-- title: manager will assign -->
+        <div class="mb-3">
+            <input type="hidden" id="des_id" name="des_id">
+           <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+            <!-- <div id="title_error"></div> -->
+        </div>
+       
+
+        <div id="acknowledge" class="mt-3 fw-semibold" style="display:none;"></div>
+        <button type="submit" class="btn btn-success w-100" id="todo-btn" >Add Task</button>
+      </form>
+    </div>
+</div>
+
+    
+
+
+
+</div>
+{% endblock %}

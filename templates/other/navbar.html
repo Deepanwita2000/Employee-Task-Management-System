@@ -1,0 +1,90 @@
+
+{% load static %}
+<div class="container">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">Home</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+           
+                        <li class="nav-item">
+                            <a class="nav-link disabled">Welcome, {{ user.username }}</a>
+                        </li>
+                        <!-- <li class="nav-item">
+                            <a class="nav-link " href="{% url 'user_profile' %}">Profile</a>
+                        </li> -->
+
+                        <!-- Role-based Events Dropdown -->
+                        {% if user.role == 'employee' or user.role == 'manager' %}
+                      
+                            <!-- {% if user.role == 'manager' %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" >Employees </a>
+                                <ul class="dropdown-menu" >
+                                   
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'employee_list' %}">All employees</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/">top employees</a>
+                                    </li>
+                                   
+                                </ul>
+                            </li>
+                            {% endif %} -->
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" >Tasks </a>
+                                <ul class="dropdown-menu" >
+                                     {% if user.role == 'manager' %}
+                                    <li>
+                                       
+                                        <a class="dropdown-item" href="/">Task List</a>
+                                    </li>
+                                    {% endif %}
+                                    {% if user.role == 'employee' %}
+                                    <li>
+                                      
+                                        <a class="dropdown-item" href="{% url 'view_alloted_task' %}">Task  List</a>
+                                    </li>
+                                    {% endif %}
+                                    {% if user.role == 'manager' %}
+                                        <li>
+                                          
+                                            <a class="dropdown-item" href="/">Create Task</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </li>
+                        {% endif %}
+<!-- 
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">Dashboard</a>
+                        </li> -->
+                        <li class="nav-item">
+                            <a class="nav-link text-danger" href="{% url 'logoutUser' %}">Logout</a>
+                        </li>
+                    {% else %}
+                         <li class="nav-item">
+                            <a class="nav-link" href="{% url 'registerEmployee' %}">Employee</a>
+                        </li>
+                         <li class="nav-item">
+                            <a class="nav-link" href="{% url 'registerManager' %}">Manager</a>
+                        </li>
+   
+                    
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'loginUser' %}">Login</a>
+                        </li>
+                    {% endif %}
+                   
+                </ul>
+            </div>
+        </div>
+    </nav>
+</div>

@@ -1,0 +1,56 @@
+{% load static %}
+<!-- 
+<div class="container mt-5" id="projectNum">
+    <div class="card project-card" style="width: 15rem;">
+        <div class="card-body">
+            <h5 class="card-title">Projects</h5>
+           
+            <h3><p class="card-text">{{ count }}</p></h3>
+            <a href="{% url 'view_projects' %}" class="card-link">view</a>
+           
+        </div>  
+    </div>
+</div>
+ -->
+<!-- <div class="container mt-5" id="projectNum">
+    <div class="card project-card position-relative" style="width: 15rem;">
+
+         Notification badge here
+        <h2><span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            {{ count }}
+            <span class="visually-hidden">project count</span>
+        </span></h2>
+         End badge
+
+        <div class="card-body">
+            <h5 class="card-title">Projects</h5>
+            <h3><p class="card-text">{{ count }}</p></h3>
+            <a href="{% url 'view_projects' %}" class="card-link">view</a>
+        </div>
+
+    </div>
+</div> -->
+
+
+<div class="container mt-5" id="projectNum">
+
+    <a href="{% url 'view_projects' %}" style="text-decoration: none; color: inherit;">
+
+        <div class="card project-card position-relative" style="width: 15rem; height: 10rem;">
+
+            <!-- Notification badge -->
+            <h1><span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ count }}
+                <span class="visually-hidden">project count</span>
+            </span>
+            </h1>
+            <div class="card-body">
+                <!-- <h5 class="card-title">Projects</h5> -->
+                <h3 class="card-text">Projects</h3>
+            </div>
+
+        </div>
+
+    </a>
+
+</div>

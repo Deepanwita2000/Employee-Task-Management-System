@@ -1,0 +1,49 @@
+  {% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+    <div class="container mt-5">
+        <div class="card shadow-sm" style="background-color: #f3ecff;">
+            <div class="card-body">
+                <h2 class="card-title">Welcome, <strong>{{ user.first_name }}</strong> ({{ user.role }})</h2>
+                <p class="card-text">You are logged in as <strong>{{ username }}</strong>.</p>
+            </div>
+            
+        </div>
+        {% if user.role == 'employee' %}
+
+          
+           <h3 class="text-center mt-3 mb-4 pb-2 border-bottom"></h3>
+           <!--  -->
+           <div class="row">
+                <div class="col-sm-6">
+                    <!-- <div class="card"> -->
+                        <div class="card-body">
+                        {% include 'manager/project/partial_count_project.html' %}
+                        </div>
+                    <!-- </div> -->
+                </div>
+                <div class="col-sm-6">
+                    <!-- <div class="card"> -->
+                        <div class="card-body">
+                            {% include 'employee_app/message_count.html' %}
+                        </div>
+                    <!-- </div> -->
+                </div>
+            </div>
+           <!--  -->
+
+            
+             
+              
+              
+        {% elif user.role == 'manager' %}
+           
+           {% include 'manager/project/partial_count_project.html' %}
+           {% include 'manager/project/project_status_count.html' %}
+        {% endif %}
+      
+    </div>
+
+{% endblock %}

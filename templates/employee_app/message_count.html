@@ -1,0 +1,58 @@
+{% load static %}
+
+<!-- <div class="container mt-5" id="projectNum">
+    <div class="card project-card" style="width: 15rem;">
+        <div class="card-body">
+            <h5 class="card-title">Message</h5>
+           
+            <h3><p class="card-text">{{ com_count }}</p></h3>
+            <a href="{% url 'view_messages' %}" class="card-link">view</a>
+           
+        </div>  
+    </div>
+</div> -->
+
+
+
+<!-- <div class="container mt-5" id="projectNum">
+    <div class="card project-card position-relative" style="width: 15rem;">
+
+         Notification badge here
+        <h2><span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            {{ com_count }}
+            <span class="visually-hidden">Message count</span>
+        </span></h2>
+         End badge
+
+        <div class="card-body">
+            <h5 class="card-title">Message</h5>
+            <h3><p class="card-text">{{ count }}</p></h3>
+            <a href="{% url 'view_messages' %}" class="card-link">view</a>
+        </div>
+
+    </div>
+</div> -->
+
+
+<div class="container mt-5" id="projectNum">
+
+    <a href="{% url 'view_messages' %}" style="text-decoration: none; color: inherit;">
+
+        <div class="card message-card position-relative" style="width: 15rem; height: 10rem;">
+
+            <!-- Notification badge -->
+            <h1><span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ com_count }}
+                <span class="visually-hidden">Message count</span>
+            </span></h1>
+             <!--  End badge -->
+            <div class="card-body">
+                <!-- <h5 class="card-title">Messages</h5> -->
+                <h3 class="card-text">Messages</h3>
+            </div>
+
+        </div>
+
+    </a>
+
+</div>

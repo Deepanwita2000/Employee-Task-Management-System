@@ -1,0 +1,85 @@
+{
+"role":"employee",
+"first_name":"Peter",
+"last_name":"Parker",
+"email":"peter@gmail.com",
+"designation":"Python developer",
+"date_joined":"05-11-2025",
+"password":"Qwerty@01",
+"password_confirm":"Qwerty@01",
+"username":"peter"
+}
+
+task:
+{
+    "title": "math",
+    "description": "This is a task where user need to use python",
+    "status":"pending",
+    "employee_email": "lily@gmail.com"
+    
+}
+
+
+
+middleware
+# your_app/middleware.py
+import datetime
+from django.http import HttpResponseForbidden
+
+class CheckUserMiddleware:
+    def __init__(self, get_response):
+        print("CheckUserMiddleware initialized")
+        print("response",get_response)
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Log the request info
+        user = getattr(request, 'user', None)
+        username = user.username if user and user.is_authenticated else 'Anonymous'
+        path = request.path
+        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        # print user's status
+        print(f"[{timestamp}] User: {username} | Path: {path}")
+        # if user.is_authenticated:
+        #     return HttpResponseForbidden("Access  authenticated.")
+
+        # # Access control
+        # if not user.is_authenticated:
+        #     return HttpResponseForbidden("Access denied: User not authenticated.")
+
+        # Check if user is staff or manager
+        # if not user.is_staff and not user.groups.filter(name='manager').exists():
+        #     return HttpResponseForbidden("Access denied: Staff or manager only.")
+
+        # Allow request to proceed
+        response = self.get_response(request)
+        return response
+  
+
+
+  ///// dashboard
+  {% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+    <div class="container mt-5">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title">Welcome, <strong>{{ user.first_name }}</strong> ({{ user.role }})</h2>
+                <p class="card-text">You are logged in as <strong>{{ username }}</strong>.</p>
+            </div>
+            
+        </div>
+        {% if user.role == 'employee' %}
+            <h3>My Tasks</h3>
+            
+        {% elif user.role == 'manager' %}
+            
+           {% include 'manager/project/partial_count_project.html' %}
+        {% endif %}
+      
+    </div>
+
+{% endblock %}
