@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Create Program{% endblock %}
+
+{% block content %}
+<div class="container">
+  
+
+    <!-- <h4 class="mt-5 mb-4">Tasks List</h4> -->
+    <h4 class="mt-5 mb-4">Progress Data :</h4>
+     <table class="table table-striped table-bordered wide-table">
+      <thead class="table-dark">
+          <tr>
+              <th>ID</th>
+              <th>Employee</th>
+              <th>Value (in %.)</th>
+              <th>Date</th>
+              <!-- <th>{% if status %}Progress Value{% else %}{% endif %}</th> -->
+           </tr>
+      </thead>
+      
+      <tbody id="list_of_tasks">
+         {% for i in user_progress %}
+         <tr>
+           
+            <td>{{ forloop.counter }}</td>
+            <td>{{ i.employee.first_name }} {{ i.employee.last_name }}</td>
+            <td>{{ i.value }}</td>
+            <td>{{ i.track_date }}</td>
+           
+         </tr>
+          {% endfor %}
+      </tbody>
+    
+     </table>
+     <!-- <a href="{% url 'employee_line_graph' user_id %}"><button>analyst progress rate</button></a> -->
+
+
+
+</div>
+
+{% endblock %}

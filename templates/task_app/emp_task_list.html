@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Create Program{% endblock %}
+
+{% block content %}
+<div class="container">
+  
+
+  <h4 class="mt-5 mb-4">Tasks List</h4>
+  <table class="table table-striped table-bordered">
+      <thead class="table-dark">
+          <tr>
+              <th>ID</th>
+              <th>Title</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Assigned to</th>
+              <th>Assigned by</th>
+              {% if user.role == 'manager' %}
+              <th>Edit</th>
+              <th>Delete</th>
+              {% endif %}
+          </tr>
+      </thead>
+      <tbody id="empList">
+          {% include 'task_app/partial_task_list.html' %}
+      </tbody>
+  </table>
+
+
+</div>
+
+{% endblock %}

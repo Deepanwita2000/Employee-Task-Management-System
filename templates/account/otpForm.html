@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login - Task Management{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">OTP</h2>
+        </div>
+        <div class="card-body">
+
+           
+         
+
+            <form id="login_form" method="post">
+                {% csrf_token %}
+            
+                
+                <div class="mb-3">
+                    <label for="otp" class="form-label">OTP:</label>
+                    
+                    <input type="number" name="otp" id="otp" class="form-control" required>
+                </div>
+               
+                <button type="submit" class="btn btn-primary w-100" id="otp_btn">Submit</button>
+            </form>
+
+            <div id="error_otp_message" class="text-danger mt-3" style="display: none;"></div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

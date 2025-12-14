@@ -1,0 +1,40 @@
+{% load static %}
+
+<div class="container mt-5">
+    <h4>Project Status :</h4>
+    <div class="row">
+
+        <div class="col-md-4">
+            <div class="card project-card" style="width: 15rem;">
+                <div class="card-body">
+                    <h5 class="card-title">Pending</h5>
+                
+                    <p class="card-text">{{ count_pending_tasks }}</p>
+                    <a href="{% url 'employeeList_pending_status' %}" class="card-link">view</a>
+            
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card project-card" style="width: 15rem;">
+                <div class="card-body">
+                    <h5 class="card-title">In Progress</h5>
+                    <p class="card-text">{{ count_progress_tasks }}</p>
+                    <a href="{% url 'employeeList_progress_status' %}" class="card-link">view</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card project-card" style="width: 15rem;">
+                <div class="card-body">
+                    <h5 class="card-title">Completed</h5>
+                    <p class="card-text">{{ count_complete_tasks }}</p>
+                    <a href="{% url 'employeeList_complete_status' %}" class="card-link">view</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
