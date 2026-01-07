@@ -1,0 +1,35 @@
+<!-- 
+
+
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Give Comments{% endblock %}
+
+{% block content %}
+<div class="container"> 
+ 
+
+
+    <h4 class="mt-5 mb-4"></h4>
+  <div class="card" id="comment_box">
+          {% for com in comments %}
+{% if user.role == 'employee' %}
+  {% if com.commented_to == user %}
+      <div class="card-header">
+          <h5>Message</h5>
+        </div>
+        <div class="card-body">
+          <h5 class="card-title">{{ com.comment_text }}</h5>
+          <h6 class="card-title">- {{ com.commented_by.get_full_name }}</h6>
+          <p class="card-text">{{ com.commented_at }}</p>
+          
+      </div>
+  {% endif %}
+{% endif %}
+<br>
+{% endfor %}
+
+</div>
+
+</div>
+{% endblock %} -->

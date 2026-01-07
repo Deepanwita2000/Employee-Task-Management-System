@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Create Program{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h4 class="mb-4">  <p><strong>Project Title:</strong> {{ project.title }}</p></h4>
+    <h4 class="mb-4">  <p><strong>Manager :</strong> {{ user.get_full_name }}</p></h4>
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end" style="padding: 50;">
+                <a href="{% url 'view_employeeForm' project.id  %}"><button class="left-btn">Assign Employees</button></a>
+                <a href="{% url 'view_tasks' project.id  %}"><button class="left-btn">Tasks</button></a>
+            
+            </div>
+        <!-- new form -->
+        <div class="container">
+          <div class="card shadow">
+            <div class="card-header">Add Task</div>
+
+            <div class="card-body">
+              <form method="post">
+                {% csrf_token %}
+                <!-- dropdown for domains -->
+                    <div class="mb-3">
+                      <label for="designation" class="form-label">Designation</label>
+                      <!-- <input type="text" class="form-control" name="designation" id="designation" required value="****" onblur="validateUser()" oninput="clearError('designation_error')"> -->
+                      <select class="form-select"name="domain" id="domain">
+                        <option value="">****</option>
+                        {% for dm in emp_domains %}
+                        <option value="{{ dm.id }}">{{dm}}</option>
+                        {% endfor %}
+                        
+                      </select>
+                    </div>
+                    <br>
+                    <div class="mb-3">
+                      <label for="project" class="form-label">Project</label>
+                      <input type="text" class="form-control" name="proj" id="proj" value="{{ project.title }}" readonly>
+                      <input type="hidden" class="form-control" name="proj_id" id="proj_id" value="{{ project.id }}" readonly>
+                    </div>
+                    <br>
+                    <div class="mb-3">
+                      <label for="project" class="form-label">Manager</label>
+                      <input type="hidden" class="form-control" name="manager_id" id="manager_id" value="{{ user.id }}" readonly>
+                      <input type="text" class="form-control" name="manager" id="manager" value="{{ user.get_full_name }}" readonly>
+                    </div>
+                    <br>
+                    <!-- end date -->
+                    <div class="mb-3">
+                      <label for="date">End date:</label>
+                      <input type="date" class="form-control" id="end_date" name="end_date" required>
+                      <!-- <div id="end_date"></div> -->
+                    </div>
+
+                    <br>
+                    <!-- status -->
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" name="status" id="status" required>
+                        {% for value,stat in status %}
+                          <option value="{{ value }}">{{ stat }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                    <br>
+            
+                <!-- add task list -->
+                <div id="text_box">
+                  <label for="task">Add task :</label>
+                  <div class="d-flex mb-2 field-row">
+                    
+                    <textarea type='text' class="form-control" name="task" id="task" rows="1" placeholder="Enter task"></textarea>
+                    <button type="button" class="btn btn-primary ms-2 add_more">Add</button>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-success" id="add_task_btn" >Register</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+         <!-- <div class="d-grid gap-2 d-md-flex justify-content-md-end" style="padding: 50;">
+             <a href="{% url 'view_employeeForm' project.id  %}"><button class="left-btn">Assign Employees</button></a>
+          
+        </div> -->
+      <!-- end form -->
+</div>
+
+{% endblock %}
