@@ -33,11 +33,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # local apps
-    # 'task_app.apps.TaskAppConfig',
     'account_app.apps.AccountAppConfig',
     'team_app.apps.TeamAppConfig',
     'project_app.apps.ProjectAppConfig',
-    # 'comment_app.apps.CommentAppConfig',
     'profile_app.apps.ProfileAppConfig',
     'task2_app.apps.Task2AppConfig',
 
@@ -175,3 +173,4 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'deepanwita448@gmail.com' 
 EMAIL_HOST_PASSWORD = 'mefp wfif uzyt haoj'
+
