@@ -1,11 +1,4 @@
 packages:
 pip install drf-yasg
 
-emails:
-
-deepanwita562@gmail.com
-deepanwita104@gmail.com 
-deepanwita934@gmail.com
-deepanwita371@gmail.com
-deepanwita274@gmail.com
 
