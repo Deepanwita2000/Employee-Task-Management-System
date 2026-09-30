@@ -1,0 +1,82 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+    <div class="container" id="projectDetails">
+    
+        {% if user.role == 'manager' %}
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end" style="padding: 50;">
+                <a href="{% url 'assign_task' project_id  %}"><button class="left-btn">Assign Task</button></a>
+                 <a href="{% url 'view_employees_update' project_id  %}"><button class="left-btn">Team Update</button></a>
+                 <a href="{% url 'view_team' project_id  %}"><button class="left-btn">Team Members</button></a>
+            
+            </div>
+           
+        
+        
+                <h2 class="mb-4">  <p><strong>Project Title:</strong> {{ title }}</p></h2>
+                <p><strong>Manager:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+                
+
+                {% if file %}
+                    <p>
+                        <strong>Description:</strong>
+                        {{ description|linebreaks }}
+                    </p>
+                    <p>
+                        <strong>Document:</strong>
+                        <a href="{{ file.url }}" download><button type="button" class="btn btn-outline-success">Download Project</button> </a>
+                    </p>
+                {% else %}
+                    <p>No file uploaded for this project.</p>
+                {% endif %}
+            
+        
+        <!-- employee's dashboard -->
+        {% elif user.role == 'employee' %}
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end" style="padding: 50;">
+                <a href="{% url 'my_task' project_id  %}"><button class="left-btn">Task</button></a>
+            
+        </div>
+            
+            <h2 class="mb-4">  <p><strong>Project Title:</strong> {{ title }}</p></h2>
+            
+                
+            <!-- project doc file -->
+                {% if file %}
+                    <p>
+                        <strong>Description:</strong>
+                        {{ description|linebreaks }}
+                    </p>
+                    <p>
+                        <strong>Document:</strong>
+                        <a href="{{ file.url }}" download><button type="button" class="btn btn-outline-success">Download Project</button> </a>
+                    </p>
+                {% else %}
+                    <p>No file uploaded for this project.</p>
+                {% endif %}
+            <!-- Button section -->
+            
+        
+            
+        {% endif %}  
+    <!-- end -->
+    </div>
+
+
+    {% if user.role == 'manager' %}
+     <div class="dashboard-headerr " style="position: relative;     position: relative; left: 300px;">
+        <button type="button" class="btn btn-outline-primary btn-lg "
+                data-bs-toggle="modal"
+                data-bs-target="#exampleModal"
+                data-bs-whatever="@mdo">
+                      Ask Bot
+        </button>
+        {% include 'chatBot/timeline.html' %}
+    </div> 
+    {% endif %}
+
+{% endblock %}
+

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+{% if user.role == 'manager' %}
+
+    <div class="container mt-5" id="mnagerList">
+         <h4 class="mb-4">{% if has_project %}Your Assigned Projects{% endif %}</h4>   
+        
+        <div class="row">
+            {% for i, j in title %}
+                <div class="col-sm-4 d-flex">
+                    <a href="{% url 'project_Info' j %}" class="text-decoration-none w-100">
+                        <div class="card text-bg-light mb-3 h-100">
+                            <div class="card-header">
+                                <h3>Project : {{ forloop.counter }}</h3>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Title :</h5>
+                                <p class="card-text">{{ i }}</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% empty %}
+               <h3 class="text-center bg-danger text-light p-2 rounded">No projects available</h3>
+            {% endfor %} 
+        </div>
+
+    </div>
+
+{% elif user.role == 'employee' %} 
+
+    <div class="container mt-5" id="empList">
+        <h4 class="mb-4">{% if has_project %}Your Assigned Projects{% endif %}</h4>   
+       
+        <div class="row">
+            {% for i, j in title %}
+            <div class="col-sm-4 d-flex">
+                <a href="{% url 'project_Info' j %}" class="text-decoration-none w-100">
+                    <div class="card text-bg-light mb-3 h-100">
+                        <div class="card-header">
+                            <h3>Project : {{ forloop.counter }}</h3>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">Title :</h5>
+                            <p class="card-text">{{ i }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        {% empty %}
+                <h3 class="text-center bg-danger text-light p-2 rounded">No projects available</h3>
+        {% endfor %} 
+        </div>
+       
+    </div>
+{% endif %}
+
+{% endblock %}
+

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login - Task Management{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Login</h2>
+        </div>
+        <div class="card-body">
+
+           
+         
+
+            <form id="login_form" method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" name="email" id="email" class="form-control" required autocomplete="username" value="@gmail.com">
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" name="password" id="password" class="form-control" required autocomplete="current-password" value="Qwerty@1">
+                </div>
+                <div id="acknowledge" class="mt-3 fw-semibold" style="display:none;"></div>
+                <button type="submit" class="btn btn-primary w-100" id="login_btn">Login</button>
+            </form>
+
+            <div id="error_message" class="text-danger mt-3" style="display: none;"></div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

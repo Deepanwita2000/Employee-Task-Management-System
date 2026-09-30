@@ -1,0 +1,58 @@
+<!-- {% for task in tasks %}
+
+<tr class="{% if task in complete_tasks %}disabled-row{% endif %}">
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        <div class="form-check">
+                            {% csrf_token %}
+                            <input class="form-check-input points" type="checkbox" value="10"
+                                data-task="{{ task }}"
+                                data-status="{{ assign_emp.status }}"
+                                data-employee="{{ assign_emp.assigned_to.email }}"
+                                data-domain="{{ domain }}"
+                                data-project="{{ project }}">
+                            <label class="form-check-label">mark as done</label>
+                            <input type="hidden" class="displayValue" readonly id="point">
+                             
+                        </div>
+                    </td>
+                    <td>{{ task }}</td>
+                    <td>10.0</td>
+                    
+                 
+</tr>
+ 
+{% empty %}
+<tr>
+    <td colspan="6" class="text-center">No tasks available.</td>
+</tr>
+{% endfor %} -->
+
+
+
+
+{% for task in tasks %}
+<tr class="{% if task in complete_tasks %}disabled-row{% endif %}">
+    <td>{{ forloop.counter }}</td>
+    <td>
+        <div class="form-check">
+            <input class="form-check-input points"
+                   type="checkbox"
+                   value="10"
+                   {% if task in complete_tasks %}checked disabled{% endif %}
+                   data-task="{{ task|escapejs }}"
+                   data-status="{{ assign_emp.status }}"
+                   data-employee="{{ assign_emp.assigned_to.email }}"
+                   data-domain="{{ domain }}"
+                   data-project="{{ project }}">
+            <label>mark as done</label>
+            <input type="hidden" class="displayValue">
+        </div>
+    </td>
+    <td>{{ task }}</td>
+    <td>10.0</td>
+</tr>
+{% endfor %}
+
+
+

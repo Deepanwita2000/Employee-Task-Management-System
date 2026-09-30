@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Create Program{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="card shadow">
+    <div class="card-header">Add Task</div>
+
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <!-- dropdown for domains -->
+            <div class="mb-3">
+              <label for="designation" class="form-label">Designation</label>
+              <!-- <input type="text" class="form-control" name="designation" id="designation" required value="****" onblur="validateUser()" oninput="clearError('designation_error')"> -->
+              <select class="form-select"name="domains" id="domains"  onblur="validateUser()" oninput="clearError('designation_error')">
+                <option value="">****</option>
+                <option value="Junior Frontend developer">Junior Frontend developer</option>
+                <option value="Senior Frontend developer">Senior Frontend developer</option>
+                <option value="Junior Frontend developer">Junior backend developer</option>
+                <option value="Senior backend developer">Senior backend developer</option>
+                <option value="Backend(Node js) developer">Backend(Node js) developer</option>
+                <option value="Backend(Django) developer">Backend(Django) developer</option>
+                <option value="Frontend(React js) developer">Frontend(React js) developer</option>
+                <option value="Android developer">Android developer</option>
+                <option value="UI UX">UI UX</option>
+                <option value="Digital Marketing">Digital Marketing</option>
+              
+              </select>
+            </div>
+            <br>
+     
+        <!-- add task list -->
+        <div id="text_box">
+          <div class="d-flex mb-2 field-row">
+            <textarea type='text' class="form-control" name="task" id="task" rows="1" placeholder="Enter task"></textarea>
+            <button type="button" class="btn btn-primary ms-2 add_more">Add</button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-success" id="add_task_btn" >Register</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+{% endblock %}
+
+
