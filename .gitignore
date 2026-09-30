@@ -194,3 +194,5 @@ celerybeat-schedule.*
 sample/
 media/
 **/management/
+
+.env
