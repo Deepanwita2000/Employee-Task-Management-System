@@ -39,12 +39,12 @@ urlpatterns = [
 
 
 # this for local system
-# if settings.DEBUG:
-#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
 # latter add this line by removing line 40 & 41 ,so that image upload works in production
-urlpatterns += static(
-    settings.MEDIA_URL,
-    document_root=settings.MEDIA_ROOT
-)
+# urlpatterns += static(
+#     settings.MEDIA_URL,
+#     document_root=settings.MEDIA_ROOT
+# )

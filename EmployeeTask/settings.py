@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv   # ← add this
-import dj_database_url
+# import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -18,10 +18,15 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))   # ← add this
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DEBUG", "False") == "True"
+# # SECURITY WARNING: don't run with debug turned on in production!
+# DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
+
+
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
 
@@ -88,11 +93,22 @@ WSGI_APPLICATION = 'EmployeeTask.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # postgresql
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default=os.environ.get("DATABASE_URL"),
+#         conn_max_age=600
+#     )
+# }
+
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get("DATABASE_URL"),
-        conn_max_age=600
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+    }
 }
 
 # user_list=[]

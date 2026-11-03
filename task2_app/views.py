@@ -603,55 +603,130 @@ def _has_project(emp):
         p.append(i.project)
     return set(p)
 
+# @login_required
+# @role_required('manager')
+# def employee_list(request):
+#     all_employees = User.objects.filter(role='employee').order_by('date_joined')
+#     print("ALL EMPLOYEES: ",all_employees.values("id","email"))
+#     emp_count = all_employees.count()
+#     # print(all_employees , emp_count) 
+#     # -----------------------------------------------------------------
+#     notAssigned=False
+#     domains=EmployeeDomain.objects.all()
+#     all_emps=[]
+#     for i in all_employees:
+#         if not AssignEmployee.objects.filter(assigned_to=i).exists():
+#             notAssigned=True
+#             projects=None
+#         else:
+#             projects=_has_project(i)
+#             # print(projects)
+
+#         all_emps.append({
+#             'full_name':i.first_name+" "+i.last_name,
+#             'designation':i.designation_e,
+#             'yoe':i.yop,
+#             'notAssigned':notAssigned,
+#             'projects':projects
+
+
+#         })
+#     print("---------------------------------------------")
+#     print(all_emps)
+#     print("---------------------------------------------")
+#     # -----------------------------------------------------------------
+#     # pagination
+#     paginator = Paginator(all_emps , per_page=5 )  # can add  orphans=1 if any extra row remains that will get adjusted in the last page
+#     page_number = request.GET.get('page')
+#     page_obj= paginator.get_page(page_number)
+#     # print("Page number : ",page_number)
+#     # print("Page obj : ",page_obj)
+#     if request.method =='POST':
+#         html_data = render_to_string(
+#            'employee2.0/partials/employee_row.html',
+#             {
+#                 "page_obj": page_obj,
+          
+#             }
+#         )
+
+#         return JsonResponse({"data": html_data ,"designation":0,"emp_count":0})
+
+#     return render(request , 'employee2.0/all_employees.html' , {"page_obj":page_obj , "domains":domains, "emp_count":emp_count})
+
+
+
+
+
+
 @login_required
 @role_required('manager')
 def employee_list(request):
-    all_employees = User.objects.filter(role='employee').order_by('date_joined')
+
+    all_employees = User.objects.filter(
+        role='employee'
+    ).order_by('date_joined')
+
+    print("EMPLOYEE COUNT:", all_employees.count())
+    print("ALL EMPLOYEES:", list(
+        all_employees.values('id', 'first_name', 'last_name', 'email')
+    ))
+
     emp_count = all_employees.count()
-    # print(all_employees , emp_count) 
-    # -----------------------------------------------------------------
-    notAssigned=False
-    domains=EmployeeDomain.objects.all()
-    all_emps=[]
+    domains = EmployeeDomain.objects.all()
+
+    all_emps = []
+
     for i in all_employees:
-        if not AssignEmployee.objects.filter(assigned_to=i).exists():
-            notAssigned=True
-            projects=None
+
+        not_assigned = not AssignEmployee.objects.filter(
+            assigned_to=i
+        ).exists()
+
+        if not_assigned:
+            projects = None
         else:
-            projects=_has_project(i)
-            # print(projects)
+            projects = _has_project(i)
 
         all_emps.append({
-            'full_name':i.first_name+" "+i.last_name,
-            'designation':i.designation_e,
-            'yoe':i.yop,
-            'notAssigned':notAssigned,
-            'projects':projects
-
-
+            'id': i.id,
+            'first_name': i.first_name,
+            'last_name': i.last_name,
+            'designation_e': i.designation_e,
+            'yop': i.yop,
+            'notAssigned': not_assigned,
+            'projects': projects
         })
-    print("---------------------------------------------")
-    print(all_emps)
-    print("---------------------------------------------")
-    # -----------------------------------------------------------------
-    # pagination
-    paginator = Paginator(all_emps , per_page=5 )  # can add  orphans=1 if any extra row remains that will get adjusted in the last page
+
+    paginator = Paginator(all_emps, 5)
+
     page_number = request.GET.get('page')
-    page_obj= paginator.get_page(page_number)
-    # print("Page number : ",page_number)
-    # print("Page obj : ",page_obj)
-    if request.method =='POST':
+    page_obj = paginator.get_page(page_number)
+
+    if request.method == 'POST':
         html_data = render_to_string(
-           'employee2.0/partials/employee_row.html',
+            'employee2.0/partials/employee_row.html',
             {
-                "page_obj": page_obj,
-          
-            }
+                'page_obj': page_obj,
+            },
+            request=request
         )
 
-        return JsonResponse({"data": html_data ,"designation":0,"emp_count":0})
+        return JsonResponse({
+            'data': html_data,
+            'designation': 0,
+            'emp_count': emp_count
+        })
 
-    return render(request , 'employee2.0/all_employees.html' , {"page_obj":page_obj , "domains":domains, "emp_count":emp_count})
+    return render(
+        request,
+        'employee2.0/all_employees.html',
+        {
+            'page_obj': page_obj,
+            'domains': domains,
+            'emp_count': emp_count
+        }
+    )
 
 
 
