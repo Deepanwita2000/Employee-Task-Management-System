@@ -863,165 +863,188 @@ def view_team(request,proj_id=None):
 
 
 # ------------------------------ chatbot -----------------------------
+from langchain_ollama import ChatOllama
+MODEL="openai/gpt-oss-20b"
+
 def _build_timeline_prompt(project_desc, expected_timeline, team):
+
     return f"""
-            You are a SENIOR PROJECT DELIVERY MANAGER with 10+ years of experience in
-            Agile and Waterfall planning for software products.
+You are an experienced Software Project Manager.
 
-            Your output MUST strictly follow all rules below.
-            If any rule is violated, the output is considered INVALID.
+PROJECT:
+{project_desc}
 
-            ==================================================================
-            PROJECT INPUT
-            ==================================================================
+EXPECTED TIMELINE:
+{expected_timeline}
 
-            Project Description:
-            {project_desc}
+AVAILABLE TEAM:
+{team}
 
-            Expected Timeline:
-            {expected_timeline}
+Generate EXACTLY TWO project timelines.
 
-            Team Details (name, role, experience in years, domain):
-            {json.dumps(team, indent=2)}
+1. PHASE-WISE TIMELINE (WATERFALL)
 
-            ==================================================================
-            MANDATORY OUTPUT REQUIREMENTS
-            ==================================================================
+Rules:
+- Phases must be strictly sequential.
+- UI/UX → Backend → Frontend & Mobile → QA → Deployment.
+- Each phase starts only after the previous phase finishes.
+- Include duration (days), team members and deliverables.
 
-            You MUST generate EXACTLY TWO timelines for the SAME project and team:
+2. PARALLEL TIMELINE (AGILE)
 
-            1) Phase-wise Timeline (Sequential / Waterfall)
-            2) Parallel Timeline (Agile / Incremental)
+Rules:
+- Divide backend into specific APIs (Auth, User, Payment, etc.).
+- Give each API a separate activity and deliverable.
+- Frontend and Mobile must depend on specific APIs.
+- Start integration as soon as required APIs are ready.
+- QA starts only after all development and integration finish.
+- Deployment starts only after successful QA.
+- Include duration, dependencies, team members and deliverables.
 
-            Output MUST be in HUMAN-READABLE BULLET POINTS ONLY.
-            DO NOT return JSON, tables, or paragraphs.
+TEAM PLANNING RULES:
+- Assign team members according to their domain and experience.
+- Use all relevant team members.
+- Add time buffers for employees with less than 1 year experience.
+- Junior developers must work under senior supervision.
+- Senior developers must review junior developers' work.
+- Do not assign complex tasks to inexperienced developers alone.
+- Keep durations realistic and in days.
 
-            ==================================================================
-            1) PHASE-WISE TIMELINE (STRICT WATERFALL)
-            ==================================================================
+OUTPUT RULES:
+- Use concise bullet points only.
+- No JSON, tables or paragraphs.
+- Avoid lengthy explanations.
+- Mention employee names.
+- Keep deliverables short (1–3 items per activity).
+- Do not repeat unnecessary information.
 
-            Rules (NON-NEGOTIABLE):
+OUTPUT FORMAT:
 
-            - Phases MUST be strictly sequential (NO overlap)
-            - UI/UX MUST be completed before ANY development
-            - Backend MUST be completed before Frontend and Mobile start
-            - Frontend and Mobile MUST start ONLY after backend completion
-            - QA MUST start ONLY after Frontend + Mobile are fully completed
-            - Deployment MUST be a SEPARATE final step (not merged with QA)
+Phase-wise Timeline:
+- Phase 1: [Name]
+  - Duration: X days
+  - Team: [Names]
+  - Deliverables: [Short list]
 
-            Each phase MUST include:
-            - Phase Name
-            - Duration (in days)
-            - Team Members
-            - Deliverables
+Parallel Timeline:
+- Stream 1: Backend APIs
+  - Activity: [API Name]
+    - Duration: X days
+    - Depends on: [Dependency]
+    - Team: [Names]
+    - Deliverable: [Output]
 
-            ==================================================================
-            2) PARALLEL TIMELINE (STRICT AGILE / INCREMENTAL)
-            ==================================================================
+- Stream 2: Frontend
+- Stream 3: Mobile
+- Stream 4: QA & Deployment
 
-            Rules (NON-NEGOTIABLE):
-
-            - Backend MUST be broken into CLEAR API-LEVEL ACTIVITIES
-            (example: Auth API, Event API, Payment API)
-            - Each Backend API MUST explicitly state its deliverable
-            - Frontend and Mobile activities MUST depend on SPECIFIC APIs
-            - As soon as an API is completed, integration MUST begin
-            - Frontend/Mobile CANNOT depend on "Backend Development" as a whole
-            - QA MUST NOT run in parallel with development
-            - QA MUST start ONLY after ALL user-facing features are complete
-            - Deployment MUST occur ONLY after successful QA
-
-            Each activity MUST include:
-            - Activity Name
-            - Duration (in days)
-            - Depends On (explicit dependency)
-            - Team Members
-            - Deliverable
-
-            ==================================================================
-            PLANNING CONSTRAINTS (STRICTLY ENFORCED)
-            ==================================================================
-
-            - Use ALL team members where applicable
-            - More experience = faster delivery
-            - Less than 1 year experience = ADD BUFFER explicitly
-            - 0-year developers CANNOT work alone on complex tasks
-            - Senior developers MUST review junior work
-            - Always include QA and Deployment
-            - Durations MUST be realistic and in DAYS ONLY
-
-            ==================================================================
-            FINAL OUTPUT FORMAT (MANDATORY)
-            ==================================================================
-
-            Phase-wise Timeline:
-            - Phase 1: ...
-            - Duration: X days
-            - Team Members: ...
-            - Deliverables: ...
-            - Phase 2: ...
-
-            Parallel Timeline:
-            - Stream 1: Backend APIs
-            - Activity 1: ...
-                - Duration: X days
-                - Depends on: ...
-                - Team Members: ...
-                - Deliverable: ...
-            - Stream 2: Frontend
-            - Stream 3: Mobile
-            - Stream 4: QA & Deployment
-
-            DO NOT add explanations, summaries, or extra text.
-           """
+Return only the two timelines.
+"""
 
 @login_required
 @role_required('manager')
 def timeline_ai(request):
-    user = request.user
+
     users = User.objects.filter(role='employee')
 
     if request.method == "POST":
-        project_desc = request.POST.get("project_description", "").strip()
-        expected_timeline = request.POST.get("expected_timeline", "").strip()
 
-        team_raw = request.POST.get("team")
+        project_desc = request.POST.get(
+            "project_description", ""
+        ).strip()
+
+        expected_timeline = request.POST.get(
+            "expected_timeline", ""
+        ).strip()
+
+        # Validate input BEFORE calling Groq
+        if not project_desc or not expected_timeline:
+            return JsonResponse({
+                "error": "Project description and timeline are required."
+            }, status=400)
+
+        project_desc = project_desc[:1800]
+        expected_timeline = expected_timeline[:100]
+
+        team_raw = request.POST.get("team", "[]")
+
         try:
             team = json.loads(team_raw)
-            print(team)
-        except Exception:
-            return JsonResponse({"error": "Invalid team data"}, status=400)
 
-        #  LIMIT INPUT SIZE
-        project_desc = project_desc[:1800]
+            if not isinstance(team, list):
+                raise ValueError("Team must be a list")
 
-        # REDUCE TEAM SIZE
-        # team_summary = ", ".join(
-        #     f"{m.get('name')}({m.get('role')})" for m in team
-        # )
+        except (json.JSONDecodeError, TypeError, ValueError):
+            return JsonResponse({
+                "error": "Invalid team data."
+            }, status=400)
 
-        llm = ChatGroq(
-            model="llama-3.3-70b-versatile",
-            temperature=0,
-            groq_api_key=os.getenv("GROQ_API_KEY"),
+        team_data = json.dumps(team, separators=(',', ':'))
+
+        # Initialize model separately
+        try:
+            llm = ChatGroq(
+                model=MODEL,
+                temperature=0,
+                max_tokens=1800,
+                reasoning_effort="low",
+                model_kwargs={
+                    "include_reasoning": False
+                },
+                groq_api_key=os.getenv("GROQ_API_KEY")
+            )
+
+        except Exception as e:
+            print("LLM INITIALIZATION ERROR:", str(e))
+
+            return JsonResponse({
+                "error": "AI configuration error."
+            }, status=500)
+
+        # Generate response
+        try:
+
+            prompt = _build_timeline_prompt(
+                project_desc,
+                expected_timeline,
+                team_data
+            )
+
+            print("Calling Groq API...")
+
+            response = llm.invoke(prompt)
+            # response = llm.invoke("Reply with only: Working")
+
             
-        )
 
-        prompt = _build_timeline_prompt(project_desc, expected_timeline, team)
+            raw = response.content.strip()
 
-        response = llm.invoke(prompt)
-        raw = response.content.strip()
+            print("RESPONSE CONTENT:", repr(raw))
+            print("TOKEN USAGE:", response.usage_metadata)
 
-        if raw.startswith("```"):
-            raw = raw.replace("```", "").strip()
+            # Reject empty response
+            if not raw:
+                return JsonResponse({
+                    "error": "AI returned an empty response."
+                }, status=502)
 
-        return JsonResponse({"timeline": raw})
+            return JsonResponse({
+                "timeline": raw
+            })
 
-    return render(request, "chatBot/timeline.html", {"users": users})
+        except Exception as e:
 
+            print("GROQ API ERROR:", str(e))
 
+            return JsonResponse({
+                "error": "Unable to generate timeline. Please try again."
+            }, status=502)
 
-
+    return render(
+        request,
+        "chatBot/timeline.html",
+        {"users": users}
+    )
 
 # ///////////////////////////////////////////////////////////////////////////////  update
 

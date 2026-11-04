@@ -477,9 +477,20 @@ $("#timelineForm").submit(function(e){
         success: function(response){
             $("#timelineResult").html("<pre>" + response.timeline + "</pre>");
         },
+        // error: function(xhr){
+        //     $("#timelineResult").html("Error generating timeline");
+        //     console.error(xhr.responseJSON);
+        // },
         error: function(xhr){
-            $("#timelineResult").html("Error generating timeline");
-            console.error(xhr.responseJSON);
+
+            let message = xhr.responseJSON?.error || "Error generating timeline";
+
+            $("#timelineResult").html(
+                `<p class="text-danger">${message}</p>`
+            );
+
+            console.error("AJAX Error:", xhr.responseJSON);
+
         },
         complete: function(){
             $("#spinner-overlay").hide();

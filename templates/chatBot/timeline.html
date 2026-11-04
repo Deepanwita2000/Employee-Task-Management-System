@@ -12,29 +12,31 @@
     
       <form id="timelineForm" method="POST">
            {% csrf_token %}
-
             <label>Project Description</label><br>
             <textarea id="project_description" rows="5" style="width:100%;"></textarea><br><br>
             <label>Expected Timeline</label><br>
             <input type="text" id="expected_timeline" placeholder="e.g. 6 weeks"><br><br>
-            <h3>Team Members</h3>
-            {% for user in users %}
-                <div class="team-member"
-                    data-name="{{ user.get_full_name }}"
-                    data-role="{{ user.role }}"
-                    data-experience="{{ user.yop }}"
-                    data-domain="{{ user.designation_e }}">
-                    {{ user.get_full_name }} ({{ user.designation_e }} | {{ user.yop }} yrs)
-                    
-                </div>
-            {% endfor %}
+            <!-- <h3>Team Members</h3>
+             Hidden team data: accessible to JavaScript, invisible to manager -->
+            <div id="team-data" style="display: none;">
+
+                {% for user in users %}
+        <div class="team-member"
+             data-name="{{ user.get_full_name }}"
+             data-role="{{ user.role }}"
+             data-experience="{{ user.yop }}"
+             data-domain="{{ user.designation_e }}">
+        </div>
+    {% endfor %}
+
+            </div>
 
         
 
             <br>
             <button type="submit" class="btn btn-dark">Generate</button>
            
-        </form>
+      </form>
       </div>
       <!-- Reply Message -->
     <hr>
