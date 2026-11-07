@@ -14,7 +14,7 @@ from rest_framework.decorators import action
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
-
+from .tasks import send_otp_email_task,send_verification_email_task
 
 from django.conf import settings
 from django.core.mail import EmailMessage
@@ -141,23 +141,21 @@ class LogoutAPIView(APIView):
         return response
 
 
-
-
-
-
-
 # ///////////////// redo api/////////////////////
     
+
 class RegisterManagerView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
     def post(self, request):
         user = request.data
+
         print(f'User data received: {user}')
-        email=user['email']
-        print(email)
-        if User.objects.filter(email=user['email']).exists():
+
+        email = user['email']
+
+        if User.objects.filter(email=email).exists():
             raise exceptions.APIException('Email already exists!')
 
         if User.objects.filter(username=user['username']).exists():
@@ -165,38 +163,49 @@ class RegisterManagerView(APIView):
 
         if user['password'] != user['password_confirm']:
             raise exceptions.APIException('Passwords do not match!')
-        
+
         serializer = UserSerializer(data=user)
         serializer.is_valid(raise_exception=True)
-        user_instance=serializer.save(role='manager')  # role = manager will be saved automatically
+
+        user_instance = serializer.save(
+            role='manager',
+            is_active=False
+        )
 
         mail_subject = 'Please activate your account'
         email_template = 'account/email/account_verification_email.html'
-        send_verification_email(request, user_instance, mail_subject, email_template)
-        print("Verification email sent to:", email)
-        return Response(
-             {
-                'success': True,
-                'message': 'Check your email for the activation link!',
-                'user': serializer.data
-            },
-            status=201
-        )
-    
-    
 
-        
-        
+        current_site = get_current_site(request)
+
+        # Send activation email asynchronously
+        send_verification_email_task.delay(
+            user_instance.id,
+            mail_subject,
+            email_template,
+            current_site.domain
+        )
+
+        print("Verification email task queued for:", email)
+
+        return Response({
+            'success': True,
+            'message': 'Check your email for the activation link!',
+            'user': serializer.data
+        }, status=201)
+       
+
 class RegisterEmployeeView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
     def post(self, request):
         user = request.data
+
         print(f'User data received: {user}')
-        email=user['email']
-        print(email)
-        if User.objects.filter(email=user['email']).exists():
+
+        email = user['email']
+
+        if User.objects.filter(email=email).exists():
             raise exceptions.APIException('Email already exists!')
 
         if User.objects.filter(username=user['username']).exists():
@@ -204,67 +213,116 @@ class RegisterEmployeeView(APIView):
 
         if user['password'] != user['password_confirm']:
             raise exceptions.APIException('Passwords do not match!')
-        
+
         serializer = UserSerializer(data=user)
         serializer.is_valid(raise_exception=True)
-        user_instance=serializer.save(role='employee')  # role = employee will be saved automatically
+
+        user_instance = serializer.save(
+            role='employee',
+            is_active=False
+        )
 
         mail_subject = 'Please activate your account'
         email_template = 'account/email/account_verification_email.html'
-        send_verification_email(request, user_instance, mail_subject, email_template)
-        print("Verification email sent to:", email)
-        return Response(
-             {
-                'success': True,
-                'message': 'Check your email for the activation link!',
-                'user': serializer.data
-            },
-            status=201
+
+        current_site = get_current_site(request)
+
+        # Send activation email asynchronously
+        send_verification_email_task.delay(
+            user_instance.id,
+            mail_subject,
+            email_template,
+            current_site.domain
         )
 
+        print("Verification email task queued for:", email)
 
+        return Response({
+            'success': True,
+            'message': 'Check your email for the activation link!',
+            'user': serializer.data
+        }, status=201)
 
 def generate_otp_api():
     code = str(random.randint(100000,999999))
     expires_at= timezone.now() + timedelta(seconds=60)
     return code,expires_at
 
+
 class ChangePasswordView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
-    def post(self,request):
-        user=request.data
-        # email,new_pass,confirm_pass
-        email=user['email']
-        new_pass = user['new_password']
-        confirm_pass = user['confirm_password']
-        # save password
-        userInfo=User.objects.get(email=email)
-        # print(f"old password -> {userInfo.password}")
-        userInfo.set_password(new_pass)
-        userInfo.save()
+    def post(self, request):
+        try:
+            user_data = request.data
 
-        mail_subject = 'Please activate your account'
-        email_template = 'account/email/send_otp.html'
-        # otp=generate_otp_api()
-        # print(f"otp is {otp} and user is {email}")
-        # OTP.objects.create(otp=otp , user=userInfo)
+            email = user_data['email']
+            new_pass = user_data['new_password']
+            confirm_pass = user_data['confirm_password']
 
-        otp,expires_at=generate_otp_api()
-        print(f"otp is {otp}")
-        OTP.objects.create(otp=otp , user=userInfo , expires_at=expires_at)
-        user_list.append(user)
-        print("from api otp of users: ",user_list)
-        send_otp_email(request, userInfo, mail_subject, email_template,otp)
-        print("otp sent to:", email)
+            # Check whether passwords match
+            if new_pass != confirm_pass:
+                return Response({
+                    'success': False,
+                    'message': 'Passwords do not match!'
+                }, status=400)
 
-        return Response({
-            'success': True,
-            'message': 'Check your email for the activation link!',
-            'redirect_url': '/account/add_otp/'
-        }, status=200)
+            # Get user
+            userInfo = User.objects.filter(email=email).first()
 
+            if not userInfo:
+                return Response({
+                    'success': False,
+                    'message': 'User not found!'
+                }, status=404)
+
+            # Save new password
+            userInfo.set_password(new_pass)
+            userInfo.save()
+
+            mail_subject = 'Please Verify OTP'
+            email_template = 'account/email/send_otp.html'
+
+            # Generate OTP
+            otp, expires_at = generate_otp_api()
+
+            print(f"otp is {otp}")
+
+            # Store OTP in database
+            OTP.objects.create(
+                otp=otp,
+                user=userInfo,
+                expires_at=expires_at
+            )
+
+            # Get domain
+            current_site = get_current_site(request)
+
+            # Send OTP email asynchronously using Celery
+            send_otp_email_task.delay(
+                userInfo.id,
+                mail_subject,
+                email_template,
+                otp,
+                current_site.domain
+            )
+
+            print("OTP task queued for:", email)
+
+            return Response({
+                'success': True,
+                'message': 'OTP sent to your registered email!',
+                'redirect_url': '/account/add_otp/'
+            }, status=200)
+
+        except Exception as e:
+            print("Error:", str(e))
+
+            return Response({
+                'success': False,
+                'message': str(e)
+            }, status=400)
 
 ############################################################### AJAX ###################################################################
 
@@ -282,24 +340,6 @@ def activate(request, uidb64, token):
         return redirect('/account/sample_login/?activated=true')
     else:
         return redirect('/account/sample_login/?invalid_token=true')
-
-# Send verification email
-def send_verification_email(request, user, mail_subject, email_template):
-    from_email = settings.DEFAULT_FROM_EMAIL
-    current_site = get_current_site(request)            # Get the current site
-   
-    message = render_to_string(email_template, {        # Render the email template with the context
-        'user': user,
-        'domain': current_site,
-        'uid': urlsafe_base64_encode(force_bytes(user.pk)),     # Encode the user's primary key
-        'token': default_token_generator.make_token(user),      # Generate a token for the user
-    })
-    to_email = user.email
-    mail = EmailMessage(mail_subject, message, from_email, to=[to_email])
-    mail.content_subtype = "html"
-    mail.send()
-
-
 
 def register_view(request):
     mg=None
@@ -384,14 +424,20 @@ def register_view(request):
             )
 
             print("User created successfully:", user.email)
-
-            # Send verification email
-             # Send verification email
+            # Send verification email asynchronously through Celery
             mail_subject = 'Please activate your account'
             email_template = 'account/email/account_verification_email.html'
-            send_verification_email(request, user, mail_subject, email_template)
-            print("Verification email sent to:", email)
 
+            current_site = get_current_site(request)
+
+            send_verification_email_task.delay(
+                user.id,
+                mail_subject,
+                email_template,
+                current_site.domain
+            )
+
+            print("Verification email task queued for:", email)
             return JsonResponse({
                 'success': True,
                 'message': 'Check your email for the activation link!',
@@ -639,23 +685,6 @@ def activate_otp(request,uidb64,token):
         return redirect('/account/add_otp/?invalid_token=true')
 
 
-# Send otp email
-def send_otp_email(request, user, mail_subject, email_template,otp_code):
-    from_email = settings.DEFAULT_FROM_EMAIL
-    current_site = get_current_site(request)            # Get the current site
-    
-    message = render_to_string(email_template, {        # Render the email template with the context
-        'user': user,
-        'domain': current_site,
-        'code':otp_code,
-        'uid': urlsafe_base64_encode(force_bytes(user.pk)),     # Encode the user's primary key
-        'token': default_token_generator.make_token(user),      # Generate a token for the user
-    })
-    to_email = user.email
-    mail = EmailMessage(mail_subject, message, from_email, to=[to_email])
-    mail.content_subtype = "html"
-    mail.send()
-
 # add & verify otp
 def add_otp(request):
     if request.method == 'GET':
@@ -687,7 +716,7 @@ def add_otp(request):
                 "redirect_url": '/account/sample_login/'
             })
        
-          
+         
 def generate_otp():
     code = str(random.randint(100000,999999))
     expires_at= timezone.now() + timedelta(seconds=60)
@@ -712,7 +741,16 @@ def resend_otp(request):
             otp,expires_at=generate_otp()
             print(f"otp is {otp} sent to {user}")
             OTP.objects.create(otp=otp , user=user , expires_at=expires_at)
-            send_otp_email(request, user, mail_subject, email_template,otp)
+            # send_otp_email(request, user, mail_subject, email_template,otp)
+            current_site = get_current_site(request)
+
+            send_otp_email_task.delay(
+                user.id,
+                mail_subject,
+                email_template,
+                otp,
+                current_site.domain
+            )
             print("otp sent to:", email)
 
            
@@ -752,12 +790,34 @@ def change_password(request):
                     email_template = 'account/email/send_otp.html'
                     otp,expires_at=generate_otp()
                     print(f"otp is {otp}")
-                    OTP.objects.create(otp=otp , user=user , expires_at=expires_at)
+                    ########################################################################################33
+                    # OTP.objects.create(otp=otp , user=user , expires_at=expires_at)
+                    # user_list.append(user)
+                    # print(user_list)
+                    # send_otp_email(request, user, mail_subject, email_template,otp)
+                    OTP.objects.create(
+                        otp=otp,
+                        user=user,
+                        expires_at=expires_at
+                    )
+
                     user_list.append(user)
+
                     print(user_list)
-                    send_otp_email(request, user, mail_subject, email_template,otp)
+
+                    current_site = get_current_site(request)
+
+                    send_otp_email_task.delay(
+                        user.id,
+                        mail_subject,
+                        email_template,
+                        otp,
+                        current_site.domain
+                    )
+
+                    print("OTP task queued for:", email)
                     
-                    print("otp sent to:", email)
+                    ###############################################################################################
 
                     # return JsonResponse({
                     #     'success': True,
